@@ -16,35 +16,100 @@ import lombok.Data;
  * @since 2019-07-05 11:22:14
  */
 @Data
-public class SocketPart {
+public class SocketPart implements IBelongControl {
 
     private String socketPartKey;
     private Socket listenSocket;
     private Socket sendSocket;
 
-    private InputToOutputThread inputToOutputThread;
+    private InputToOutputThread serverToClientThread;
+    private InputToOutputThread clientToServerThread;
 
-    public void cancell() {
+    /**
+     * 所属监听类
+     */
+    private ServerListenThread belongServerListen;
 
+    /**
+     * 停止，并告知上层处理掉
+     *
+     * @author Pluto
+     * @since 2019-07-11 17:04:52
+     */
+    public void stop() {
+        if (belongServerListen != null) {
+            belongServerListen.stopSocketPart(socketPartKey);
+        }
+        belongServerListen = null;
+        this.cancell();
     }
 
-    public void createPassWay() {
-        InputStreamReader lisReader;
+    /**
+     * 退出
+     *
+     * @author Pluto
+     * @since 2019-07-11 17:04:39
+     */
+    public void cancell() {
+        if (listenSocket != null) {
+            try {
+                listenSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            listenSocket = null;
+        }
+
+        if (sendSocket != null) {
+            try {
+                sendSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            sendSocket = null;
+        }
+
+        if (serverToClientThread != null) {
+            serverToClientThread.cancell();
+            serverToClientThread = null;
+        }
+        if (clientToServerThread != null) {
+            clientToServerThread.cancell();
+            clientToServerThread = null;
+        }
+    }
+
+    /**
+     * 建立隧道
+     *
+     * @author Pluto
+     * @since 2019-07-11 16:36:08
+     * @return
+     */
+    public boolean createPassWay() {
+
         try {
-            lisReader = new InputStreamReader(listenSocket.getInputStream());
+            InputStreamReader lisReader = new InputStreamReader(listenSocket.getInputStream());
             OutputStreamWriter lisWriter = new OutputStreamWriter(listenSocket.getOutputStream());
 
             InputStreamReader sendReader = new InputStreamReader(sendSocket.getInputStream());
             OutputStreamWriter sendWriter = new OutputStreamWriter(sendSocket.getOutputStream());
 
-            InputToOutputThread lisToSend = new InputToOutputThread(lisReader, sendWriter);
-            InputToOutputThread sendToLis = new InputToOutputThread(sendReader, lisWriter);
+            serverToClientThread = new InputToOutputThread(lisReader, sendWriter, this);
+            clientToServerThread = new InputToOutputThread(sendReader, lisWriter, this);
 
-            lisToSend.start();
-            sendToLis.start();
+            serverToClientThread.start();
+            clientToServerThread.start();
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
+        return true;
+    }
+
+    @Override
+    public void noticeStop() {
+        this.stop();
     }
 
 }

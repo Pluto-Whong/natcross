@@ -23,20 +23,19 @@ public class App {
 
     public static void main(String[] args) throws IOException {
         ServerSocket server = new ServerSocket(lisPort);
-        
-        
+
         Socket socket = server.accept();
         lisReader = new InputStreamReader(socket.getInputStream());
         lisWriter = new OutputStreamWriter(socket.getOutputStream());
 
         createClient();
 
-        InputToOutputThread lisToSend = new InputToOutputThread(lisReader, sendWriter);
-        InputToOutputThread sendToLis = new InputToOutputThread(sendReader, lisWriter);
+//        InputToOutputThread lisToSend = new InputToOutputThread(lisReader, sendWriter);
+//        InputToOutputThread sendToLis = new InputToOutputThread(sendReader, lisWriter);
 
-        sendToLis.start();
-        lisToSend.start();
-        
+//        sendToLis.start();
+//        lisToSend.start();
+
     }
 
     public static void createClient() throws UnknownHostException, IOException {

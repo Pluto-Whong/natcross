@@ -10,7 +10,7 @@ import java.util.TreeMap;
 
 /**
  * <p>
- * 
+ * 监听服务
  * </p>
  *
  * @author wangmin1994@qq.com
@@ -38,7 +38,8 @@ public class ServerListenThread extends Thread {
                 Socket listenSocket = listenServerSocket.accept();
 
                 if (controlSocket == null) {
-                    break;
+                    listenSocket.close();
+                    continue;
                 }
 
                 String socketPartKey = CommonFormat.getSocketPartKey(listenPort);
@@ -47,37 +48,91 @@ public class ServerListenThread extends Thread {
                 socketPart.setSocketPartKey(socketPartKey);
                 socketPart.setListenSocket(listenSocket);
 
+                if (!sendClientWait(socketPartKey)) {
+                    socketPart.cancell();
+                    continue;
+                }
                 socketPartMap.put(socketPartKey, socketPart);
-
-                sendClientWait(socketPartKey);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    @Override
     public void start() {
         this.isAlive = true;
         if (!this.isAlive()) {
-            this.start();
+            super.start();
         }
     }
 
-    public void doSetPartClient(String socketPartKey, Socket sendSocket) {
+    /**
+     * 停止指定的端口
+     *
+     * @author Pluto
+     * @since 2019-07-11 16:33:10
+     * @param socketPartKey
+     * @return
+     */
+    public boolean stopSocketPart(String socketPartKey) {
+        SocketPart socketPart = socketPartMap.remove(socketPartKey);
+        if (socketPart == null) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 将接受到的连接进行设置组合
+     * 
+     * @param socketPartKey
+     * @param sendSocket
+     * @return
+     */
+    public boolean doSetPartClient(String socketPartKey, Socket sendSocket) {
         SocketPart socketPart = socketPartMap.get(socketPartKey);
         if (socketPart == null) {
-            return;
+            return false;
         }
         socketPart.setSendSocket(sendSocket);
+
+        return socketPart.createPassWay();
     }
 
-    public void sendClientWait(String socketPartKey) {
+    /**
+     * 告知客户端，有新连接
+     *
+     * @author Pluto
+     * @since 2019-07-11 15:45:14
+     * @param socketPartKey
+     */
+    public boolean sendClientWait(String socketPartKey) {
         try {
             OutputStream outputStream = this.controlSocket.getOutputStream();
             outputStream.write(socketPartKey.getBytes());
             outputStream.flush();
         } catch (IOException e) {
             e.printStackTrace();
+            if (this.controlSocket == null || !this.controlSocket.isConnected() || !this.controlSocket.isClosed()) {
+                // 保证control为置空状态
+                stopListen();
+            }
+            return false;
+        }
+        return true;
+    }
+
+    public void stopListen() {
+        isAlive = false;
+
+        if (controlSocket != null) {
+            try {
+                controlSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.controlSocket = null;
         }
     }
 

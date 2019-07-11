@@ -18,9 +18,12 @@ public class InputToOutputThread extends Thread {
     private Reader reader;
     private Writer writer;
 
-    public InputToOutputThread(Reader reader, Writer writer) {
+    private IBelongControl belongControl;
+
+    public InputToOutputThread(Reader reader, Writer writer, IBelongControl belongControl) {
         this.reader = reader;
         this.writer = writer;
+        this.belongControl = belongControl;
     }
 
     @Override
@@ -35,6 +38,10 @@ public class InputToOutputThread extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
+
+        if (belongControl != null) {
+            belongControl.noticeStop();
+        }
     }
 
     public void cancell() {
@@ -42,9 +49,11 @@ public class InputToOutputThread extends Thread {
         try {
             if (reader != null) {
                 reader.close();
+                reader = null;
             }
             if (writer != null) {
                 writer.close();
+                writer = null;
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package person.pluto.natcross;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
@@ -19,21 +20,22 @@ public class ServerListenThread extends Thread {
 
     private boolean isAlive = true;
     private Integer listenPort;
-    private ServerSocket serverSocket;
-    private ServerSocket controlSocket;
+    private ServerSocket listenServerSocket;
+
+    private Socket controlSocket;
 
     private Map<String, SocketPart> socketPartMap = new TreeMap<>();
 
-    public ServerListenThread(Integer port) throws IOException {
+    public ServerListenThread(Integer port, Integer controlPort) throws IOException {
         this.listenPort = port;
-        serverSocket = new ServerSocket(port);
+        listenServerSocket = new ServerSocket(port);
     }
 
     @Override
     public void run() {
         while (isAlive) {
             try {
-                Socket listenSocket = serverSocket.accept();
+                Socket listenSocket = listenServerSocket.accept();
 
                 if (controlSocket == null) {
                     break;
@@ -47,21 +49,56 @@ public class ServerListenThread extends Thread {
 
                 socketPartMap.put(socketPartKey, socketPart);
 
+                sendClientWait(socketPartKey);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
+    public void start() {
+        this.isAlive = true;
+        if (!this.isAlive()) {
+            this.start();
+        }
+    }
+
+    public void doSetPartClient(String socketPartKey, Socket sendSocket) {
+        SocketPart socketPart = socketPartMap.get(socketPartKey);
+        if (socketPart == null) {
+            return;
+        }
+        socketPart.setSendSocket(sendSocket);
+    }
+
+    public void sendClientWait(String socketPartKey) {
+        try {
+            OutputStream outputStream = this.controlSocket.getOutputStream();
+            outputStream.write(socketPartKey.getBytes());
+            outputStream.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void cancell() {
         isAlive = false;
 
-        if (serverSocket != null) {
+        if (listenServerSocket != null) {
             try {
-                serverSocket.close();
+                listenServerSocket.close();
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (controlSocket != null) {
+            try {
+                controlSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            this.controlSocket = null;
         }
 
         if (socketPartMap != null) {
@@ -71,11 +108,24 @@ public class ServerListenThread extends Thread {
                     socketPart.cancell();
                 }
             }
+            socketPartMap.clear();
         }
     }
 
     public Integer getListenPort() {
         return this.listenPort;
+    }
+
+    public void setControlSocket(Socket controlSocket) {
+        if (this.controlSocket != null) {
+            try {
+                this.controlSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        this.controlSocket = controlSocket;
     }
 
 }

@@ -30,11 +30,11 @@ public class App {
 
         createClient();
 
-//        InputToOutputThread lisToSend = new InputToOutputThread(lisReader, sendWriter);
-//        InputToOutputThread sendToLis = new InputToOutputThread(sendReader, lisWriter);
+        InputToOutputThread lisToSend = new InputToOutputThread(lisReader, sendWriter, null);
+        InputToOutputThread sendToLis = new InputToOutputThread(sendReader, lisWriter, null);
 
-//        sendToLis.start();
-//        lisToSend.start();
+        sendToLis.start();
+        lisToSend.start();
 
     }
 

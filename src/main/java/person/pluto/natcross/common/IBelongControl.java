@@ -15,4 +15,8 @@ public interface IBelongControl {
         // TODO 用消息队列更加合适
     }
 
+    default boolean stopSocketPart(String socketPartKey) {
+        return true;
+    }
+
 }

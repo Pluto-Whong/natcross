@@ -1,7 +1,9 @@
 package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 
@@ -31,7 +33,7 @@ public class SocketPart implements IBelongControl {
     /**
      * 所属监听类
      */
-    private ServerListenThread belongServerListen;
+    private IBelongControl belongThread;
 
     /**
      * 停止，并告知上层处理掉
@@ -40,10 +42,10 @@ public class SocketPart implements IBelongControl {
      * @since 2019-07-11 17:04:52
      */
     public void stop() {
-        if (belongServerListen != null) {
-            belongServerListen.stopSocketPart(socketPartKey);
+        if (belongThread != null) {
+            belongThread.stopSocketPart(socketPartKey);
         }
-        belongServerListen = null;
+        belongThread = null;
         this.cancell();
     }
 
@@ -92,14 +94,20 @@ public class SocketPart implements IBelongControl {
     public boolean createPassWay() {
 
         try {
-            InputStreamReader lisReader = new InputStreamReader(listenSocket.getInputStream());
-            OutputStreamWriter lisWriter = new OutputStreamWriter(listenSocket.getOutputStream());
+//            InputStreamReader lisReader = new InputStreamReader(listenSocket.getInputStream());
+//            OutputStreamWriter lisWriter = new OutputStreamWriter(listenSocket.getOutputStream());
+//
+//            InputStreamReader sendReader = new InputStreamReader(sendSocket.getInputStream());
+//            OutputStreamWriter sendWriter = new OutputStreamWriter(sendSocket.getOutputStream());
 
-            InputStreamReader sendReader = new InputStreamReader(sendSocket.getInputStream());
-            OutputStreamWriter sendWriter = new OutputStreamWriter(sendSocket.getOutputStream());
+            InputStream listInputStream = listenSocket.getInputStream();
+            OutputStream lisOutputStream = listenSocket.getOutputStream();
 
-            serverToClientThread = new InputToOutputThread(lisReader, sendWriter, this);
-            clientToServerThread = new InputToOutputThread(sendReader, lisWriter, this);
+            InputStream sendInputStream = sendSocket.getInputStream();
+            OutputStream sendOutputStream = sendSocket.getOutputStream();
+
+            serverToClientThread = new InputToOutputThread(listInputStream, sendOutputStream, this);
+            clientToServerThread = new InputToOutputThread(sendInputStream, lisOutputStream, this);
 
             serverToClientThread.start();
             clientToServerThread.start();

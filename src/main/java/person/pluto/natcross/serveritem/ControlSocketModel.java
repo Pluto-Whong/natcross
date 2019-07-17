@@ -7,6 +7,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import person.pluto.natcross.common.InteractiveUtil;
+import person.pluto.natcross.model.ClientWaitModel;
 import person.pluto.natcross.model.InteractiveModel;
 import person.pluto.natcross.model.InteractiveTypeEnum;
 
@@ -50,7 +51,8 @@ public class ControlSocketModel {
     }
 
     public void sendClientWait(String socketPartKey) throws IOException {
-        InteractiveModel model = InteractiveModel.of(InteractiveTypeEnum.CLIENT_WAIT, "socketPartKey", socketPartKey);
+        InteractiveModel model = InteractiveModel.of(InteractiveTypeEnum.CLIENT_WAIT,
+                new ClientWaitModel(socketPartKey));
         send(model);
     }
 

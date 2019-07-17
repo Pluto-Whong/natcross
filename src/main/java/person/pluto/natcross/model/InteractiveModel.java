@@ -20,6 +20,11 @@ public class InteractiveModel {
         return new InteractiveModel(CommonFormat.getInteractiveSeq(), interactiveTypeEnum.name(), jsonObject);
     }
 
+    public static InteractiveModel of(String interactiveSeq, InteractiveTypeEnum interactiveTypeEnum, Object data) {
+        return new InteractiveModel(interactiveSeq, interactiveTypeEnum.name(),
+                JSON.parseObject(JSON.toJSONString(data)));
+    }
+
     public static InteractiveModel of(InteractiveTypeEnum interactiveTypeEnum, Object data) {
         return new InteractiveModel(CommonFormat.getInteractiveSeq(), interactiveTypeEnum.name(),
                 JSON.parseObject(JSON.toJSONString(data)));
@@ -33,7 +38,7 @@ public class InteractiveModel {
     private String interactiveSeq;
     private String interactiveType;
     private JSONObject data;
-    
+
     public String toJSONString() {
         return JSON.toJSONString(this);
     }

@@ -28,7 +28,20 @@ public class CommonFormat {
         DecimalFormat fiveLenFormat = new DecimalFormat("00000");
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
         String randomNum = RandomStringUtils.randomNumeric(4);
-        return "SK-" + fiveLenFormat.format(listenPort) + dateTime + "-" + randomNum;
+        return "SK-" + fiveLenFormat.format(listenPort) + "-" + dateTime + "-" + randomNum;
+    }
+
+    /**
+     * 根据socketPartKey获取端口号
+     *
+     * @author Pluto
+     * @since 2019-07-17 11:39:50
+     * @param socketPartKey
+     * @return
+     */
+    public static Integer getSocketPortByPartKey(String socketPartKey) {
+        String[] split = socketPartKey.split("-");
+        return Integer.valueOf(split[1]);
     }
 
     /**

@@ -15,9 +15,13 @@ public enum InteractiveTypeEnum {
     //
     UNKNOW("未知"),
     //
+    COMMON_REPLY("通用回复标签"),
+    //
     CLIENT_WAIT("需求客户端建立连接"),
     //
-    CLIENT_CONTROL("客户端建立连接"),
+    CLIENT_CONNECT("客户端建立通道连接"),
+    //
+    CLIENT_CONTROL("客户端控制端口建立连接"),
     //
     ;
 

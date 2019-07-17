@@ -1,15 +1,17 @@
 package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import person.pluto.natcross.common.CommonFormat;
+import person.pluto.natcross.common.IBelongControl;
 
 import java.util.TreeMap;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
@@ -19,7 +21,8 @@ import java.util.TreeMap;
  * @author wangmin1994@qq.com
  * @since 2019-07-05 10:53:33
  */
-public class ServerListenThread extends Thread {
+@Slf4j
+public class ServerListenThread extends Thread implements IBelongControl {
 
     private boolean isAlive = false;
     private Integer listenPort;
@@ -29,7 +32,7 @@ public class ServerListenThread extends Thread {
 
     private Map<String, SocketPart> socketPartMap = new TreeMap<>();
 
-    public ServerListenThread(Integer port, Integer controlPort) throws IOException {
+    public ServerListenThread(Integer port) throws IOException {
         this.listenPort = port;
         listenServerSocket = new ServerSocket(port);
     }
@@ -68,6 +71,7 @@ public class ServerListenThread extends Thread {
         if (!this.isAlive()) {
             super.start();
         }
+        log.info("server listen port[{}] is started!", this.listenPort);
     }
 
     /**
@@ -78,11 +82,14 @@ public class ServerListenThread extends Thread {
      * @param socketPartKey
      * @return
      */
+    @Override
     public boolean stopSocketPart(String socketPartKey) {
+        log.info("stopSocketPart[{}]", socketPartKey);
         SocketPart socketPart = socketPartMap.remove(socketPartKey);
         if (socketPart == null) {
             return false;
         }
+        socketPart.cancell();
         return true;
     }
 
@@ -94,6 +101,7 @@ public class ServerListenThread extends Thread {
      * @return
      */
     public boolean doSetPartClient(String socketPartKey, Socket sendSocket) {
+        log.info("doSetPartClient[{}]", socketPartKey);
         SocketPart socketPart = socketPartMap.get(socketPartKey);
         if (socketPart == null) {
             return false;
@@ -111,6 +119,7 @@ public class ServerListenThread extends Thread {
      * @param socketPartKey
      */
     public boolean sendClientWait(String socketPartKey) {
+        log.info("sendClientWait[{}]", socketPartKey);
         try {
             this.controlSocket.sendClientWait(socketPartKey);
         } catch (IOException e) {
@@ -125,6 +134,7 @@ public class ServerListenThread extends Thread {
     }
 
     public void stopListen() {
+        log.info("stopListen[{}]", this.listenPort);
         isAlive = false;
 
         if (controlSocket != null) {
@@ -138,6 +148,7 @@ public class ServerListenThread extends Thread {
     }
 
     public void cancell() {
+        log.info("cancell[{}]", this.listenPort);
         isAlive = false;
 
         if (listenServerSocket != null) {
@@ -173,6 +184,7 @@ public class ServerListenThread extends Thread {
     }
 
     public void setControlSocket(Socket controlSocket) {
+        log.info("setControlSocket[{}]", this.listenPort);
         if (this.controlSocket != null) {
             try {
                 this.controlSocket.close();

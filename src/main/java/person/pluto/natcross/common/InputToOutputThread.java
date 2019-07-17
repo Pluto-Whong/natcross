@@ -1,4 +1,4 @@
-package person.pluto.natcross;
+package person.pluto.natcross.common;
 
 import java.io.IOException;
 import java.io.Reader;

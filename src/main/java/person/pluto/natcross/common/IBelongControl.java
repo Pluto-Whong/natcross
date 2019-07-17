@@ -1,4 +1,4 @@
-package person.pluto.natcross;
+package person.pluto.natcross.common;
 
 /**
  * 
@@ -12,7 +12,7 @@ package person.pluto.natcross;
 public interface IBelongControl {
 
     default void noticeStop() {
-
+        // TODO 用消息队列更加合适
     }
 
 }

@@ -9,6 +9,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import person.pluto.natcross.common.InputToOutputThread;
+
 public class App {
     static int lisPort = 8899;
 

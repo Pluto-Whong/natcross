@@ -1,4 +1,4 @@
-package person.pluto.natcross;
+package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -6,6 +6,8 @@ import java.io.OutputStreamWriter;
 import java.net.Socket;
 
 import lombok.Data;
+import person.pluto.natcross.common.IBelongControl;
+import person.pluto.natcross.common.InputToOutputThread;
 
 /**
  * 

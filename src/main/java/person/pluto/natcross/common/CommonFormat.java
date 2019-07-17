@@ -1,4 +1,4 @@
-package person.pluto.natcross;
+package person.pluto.natcross.common;
 
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
@@ -16,11 +16,32 @@ import org.apache.commons.lang3.RandomStringUtils;
  */
 public class CommonFormat {
 
+    /**
+     * 获取socket匹配对key
+     *
+     * @author Pluto
+     * @since 2019-07-17 09:35:10
+     * @param listenPort
+     * @return
+     */
     public static String getSocketPartKey(Integer listenPort) {
         DecimalFormat fiveLenFormat = new DecimalFormat("00000");
         String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
         String randomNum = RandomStringUtils.randomNumeric(4);
         return "SK-" + fiveLenFormat.format(listenPort) + dateTime + "-" + randomNum;
+    }
+
+    /**
+     * 获取交互流水号
+     *
+     * @author Pluto
+     * @since 2019-07-17 09:35:29
+     * @return
+     */
+    public static String getInteractiveSeq() {
+        String dateTime = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS"));
+        String randomNum = RandomStringUtils.randomNumeric(4);
+        return "IS-" + dateTime + "-" + randomNum;
     }
 
 }

@@ -1,4 +1,4 @@
-package person.pluto.natcross;
+package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -6,6 +6,9 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import person.pluto.natcross.common.CommonFormat;
+
 import java.util.TreeMap;
 
 /**
@@ -18,11 +21,11 @@ import java.util.TreeMap;
  */
 public class ServerListenThread extends Thread {
 
-    private boolean isAlive = true;
+    private boolean isAlive = false;
     private Integer listenPort;
     private ServerSocket listenServerSocket;
 
-    private Socket controlSocket;
+    private ControlSocketModel controlSocket;
 
     private Map<String, SocketPart> socketPartMap = new TreeMap<>();
 
@@ -109,12 +112,10 @@ public class ServerListenThread extends Thread {
      */
     public boolean sendClientWait(String socketPartKey) {
         try {
-            OutputStream outputStream = this.controlSocket.getOutputStream();
-            outputStream.write(socketPartKey.getBytes());
-            outputStream.flush();
+            this.controlSocket.sendClientWait(socketPartKey);
         } catch (IOException e) {
             e.printStackTrace();
-            if (this.controlSocket == null || !this.controlSocket.isConnected() || !this.controlSocket.isClosed()) {
+            if (this.controlSocket == null || !this.controlSocket.isValid()) {
                 // 保证control为置空状态
                 stopListen();
             }
@@ -180,7 +181,7 @@ public class ServerListenThread extends Thread {
             }
         }
 
-        this.controlSocket = controlSocket;
+        this.controlSocket = new ControlSocketModel(controlSocket);
     }
 
 }

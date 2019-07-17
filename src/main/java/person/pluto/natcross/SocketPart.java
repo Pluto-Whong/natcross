@@ -8,12 +8,13 @@ import java.net.Socket;
 import lombok.Data;
 
 /**
- * <p>
  * 
+ * <p>
+ * socket匹配对
  * </p>
  *
- * @author wangmin1994@qq.com
- * @since 2019-07-05 11:22:14
+ * @author Pluto
+ * @since 2019-07-12 08:36:30
  */
 @Data
 public class SocketPart implements IBelongControl {

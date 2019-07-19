@@ -106,7 +106,7 @@ public class SocketPart implements IBelongControl {
 
             serverToClientThread.start();
             clientToServerThread.start();
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.error("socketPart [" + this.socketPartKey + "] 隧道建立异常", e);
             return false;
         }

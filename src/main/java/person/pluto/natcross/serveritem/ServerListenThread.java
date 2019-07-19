@@ -63,7 +63,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
                     continue;
                 }
                 socketPartMap.put(socketPartKey, socketPart);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.warn("监听服务[" + this.listenPort + "]发送通知服务异常", e);
             }
         }

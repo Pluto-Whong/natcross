@@ -96,7 +96,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
             try {
                 InteractiveModel recvInteractiveModel = InteractiveUtil.recv(this.inputStream);
                 procMethod(recvInteractiveModel);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.warn("client control [{}] to server is exception,will stopClient", listenServerPort);
                 this.stopClient();
             }

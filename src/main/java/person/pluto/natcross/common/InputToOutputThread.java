@@ -41,7 +41,7 @@ public class InputToOutputThread implements Runnable {
                 outputStream.write(arrayTemp, 0, len);
                 outputStream.flush();
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             log.debug("one InputToOutputThread closed", e);
         }
 

@@ -17,8 +17,8 @@ import person.pluto.natcross.clientitem.ClientControlThread;
 public class ClientApp {
 
     public static void main(String[] args) throws IOException {
-        new ClientControlThread("127.0.0.1", 10010, 8080, "127.0.0.1", 16000).createControl();
-        new ClientControlThread("127.0.0.1", 10010, 8081, "127.0.0.1", 16000).createControl();
+//        new ClientControlThread("127.0.0.1", 10010, 8080, "127.0.0.1", 16000).createControl();
+        new ClientControlThread("129.28.193.163", 10010, 8081, "127.0.0.1", 16000).createControl();
     }
 
 }

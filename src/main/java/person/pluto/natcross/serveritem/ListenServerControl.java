@@ -2,6 +2,7 @@ package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +83,9 @@ public class ListenServerControl {
      * @since 2019-07-18 19:00:54
      */
     public static void closeAll() {
-        for (Integer key : serverListenMap.keySet()) {
+        Set<Integer> keySet = serverListenMap.keySet();
+        Integer[] array = keySet.toArray(new Integer[keySet.size()]);
+        for (Integer key : array) {
             remove(key);
         }
     }

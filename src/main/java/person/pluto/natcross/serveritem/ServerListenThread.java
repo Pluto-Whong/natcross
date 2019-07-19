@@ -3,8 +3,11 @@ package person.pluto.natcross.serveritem;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import person.pluto.natcross.common.CommonFormat;
 import person.pluto.natcross.common.IBelongControl;
@@ -53,7 +56,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
 
                 String socketPartKey = CommonFormat.getSocketPartKey(listenPort);
 
-                SocketPart socketPart = new SocketPart();
+                SocketPart socketPart = new SocketPart(this);
                 socketPart.setSocketPartKey(socketPartKey);
                 socketPart.setListenSocket(listenSocket);
 
@@ -227,6 +230,18 @@ public class ServerListenThread implements Runnable, IBelongControl {
         }
 
         this.controlSocket = new ControlSocket(controlSocket);
+    }
+
+    /**
+     * 获取已建立的连接
+     *
+     * @author Pluto
+     * @since 2019-07-19 16:32:09
+     * @return
+     */
+    public List<String> getSocketPartList() {
+        Set<String> keySet = this.socketPartMap.keySet();
+        return Arrays.asList(keySet.toArray(new String[keySet.size()]));
     }
 
 }

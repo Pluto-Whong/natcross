@@ -37,18 +37,19 @@ public class ClientHeartThread implements Runnable {
                 clientControlThread.stopClient();
 
                 if (isAlive) {
+                    this.failCount++;
                     try {
                         boolean createControl = clientControlThread.createControl();
                         if (createControl) {
                             clientControlThread.start();
+                            log.info("重新建立连接 {} 成功，在第 {} 次", clientControlThread.getListenServerPort(), this.failCount);
                             continue;
                         }
                     } catch (IOException reClientException) {
-                        log.warn("重新建立连接" + clientControlThread.getListenServerPort() + "失败第 " + (this.failCount + 1)
-                                + " 次", reClientException);
+                        log.warn("重新建立连接" + clientControlThread.getListenServerPort() + "失败第 " + this.failCount + " 次",
+                                reClientException);
                     }
 
-                    this.failCount++;
                     log.warn("重新建立连接" + clientControlThread.getListenServerPort() + "失败第 " + this.failCount + " 次");
 
                     if (failCount >= NatcrossConstants.TRY_RECLIENT_COUNT) {

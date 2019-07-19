@@ -186,7 +186,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
             return;
         }
 
-        SocketPart socketPart = new SocketPart();
+        SocketPart socketPart = new SocketPart(this);
         socketPart.setSocketPartKey(clientWaitModel.getSocketPartKey());
         socketPart.setListenSocket(destSocket);
         socketPart.setSendSocket(clientSocket);
@@ -199,7 +199,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
      */
     @Override
     public boolean stopSocketPart(String socketPartKey) {
-        log.debug("stopSocketPart[{}] from [{}]", socketPartKey, client.getInetAddress().toString());
+        log.debug("stopSocketPart[{}]", socketPartKey);
         SocketPart socketPart = socketPartMap.remove(socketPartKey);
         if (socketPart == null) {
             return false;

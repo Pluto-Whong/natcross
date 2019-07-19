@@ -35,6 +35,10 @@ public class SocketPart implements IBelongControl {
      */
     private IBelongControl belongThread;
 
+    public SocketPart(IBelongControl belongThread) {
+        this.belongThread = belongThread;
+    }
+
     /**
      * 停止，并告知上层处理掉
      *

@@ -1,6 +1,8 @@
 package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -74,6 +76,21 @@ public class ListenServerControl {
      */
     public static ServerListenThread get(Integer listenPort) {
         return serverListenMap.get(listenPort);
+    }
+
+    /**
+     * 获取全部监听服务
+     *
+     * @author Pluto
+     * @since 2019-07-19 15:31:55
+     * @return
+     */
+    public static List<ServerListenThread> getAll() {
+        List<ServerListenThread> list = new LinkedList<>();
+        serverListenMap.forEach((key, value) -> {
+            list.add(value);
+        });
+        return list;
     }
 
     /**

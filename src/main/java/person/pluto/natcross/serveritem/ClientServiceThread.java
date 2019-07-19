@@ -139,6 +139,7 @@ public class ClientServiceThread implements Runnable {
      * 启动
      */
     public void start() {
+        log.info("client service [{}] is started", this.listenPort);
         this.isAlive = true;
         if (myThread == null || !myThread.isAlive()) {
             myThread = new Thread(this);

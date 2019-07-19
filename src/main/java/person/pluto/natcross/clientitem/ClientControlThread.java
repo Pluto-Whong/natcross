@@ -87,6 +87,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
             this.start();
             return true;
         }
+        stopClient();
         return false;
     }
 

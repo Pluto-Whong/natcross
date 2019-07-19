@@ -15,12 +15,12 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.IBelongControl;
 import person.pluto.natcross.common.InteractiveUtil;
-import person.pluto.natcross.model.ClientControlModel;
-import person.pluto.natcross.model.ClientWaitModel;
 import person.pluto.natcross.model.InteractiveModel;
-import person.pluto.natcross.model.InteractiveTypeEnum;
-import person.pluto.natcross.model.ResultEnum;
-import person.pluto.natcross.model.ResultModel;
+import person.pluto.natcross.model.NatcrossResultModel;
+import person.pluto.natcross.model.enumeration.InteractiveTypeEnum;
+import person.pluto.natcross.model.enumeration.NatcrossResultEnum;
+import person.pluto.natcross.model.interactive.ClientControlModel;
+import person.pluto.natcross.model.interactive.ClientWaitModel;
 import person.pluto.natcross.serveritem.SocketPart;
 
 /**
@@ -32,7 +32,9 @@ import person.pluto.natcross.serveritem.SocketPart;
  * @since 2019-07-05 10:53:33
  */
 @Slf4j
-public class ClientControlThread extends Thread implements IBelongControl {
+public class ClientControlThread implements Runnable, IBelongControl {
+
+    private Thread myThread = null;
 
     private boolean isAlive = false;
 
@@ -48,15 +50,25 @@ public class ClientControlThread extends Thread implements IBelongControl {
 
     private Map<String, SocketPart> socketPartMap = new TreeMap<>();
 
+    private ClientHeartThread clientHeartThread;
+
     public ClientControlThread(String clientServiceIp, Integer clientServicePort, Integer listenServerPort,
             String destIp, Integer destPort) throws IOException {
-        this.setClientServiceIp(clientServiceIp);
-        this.setClientServicePort(clientServicePort);
+        this.setClientServiceIpPort(clientServiceIp, clientServicePort);
         this.setListenServerPort(listenServerPort);
-        this.setDestIp(destIp);
-        this.setDestPort(destPort);
+        this.setDestIpPort(destIp, destPort);
+        clientHeartThread = new ClientHeartThread(this);
     }
 
+    /**
+     * 触发控制服务
+     *
+     * @author Pluto
+     * @since 2019-07-18 19:02:15
+     * @return
+     * @throws UnknownHostException
+     * @throws IOException
+     */
     public boolean createControl() throws UnknownHostException, IOException {
         this.client = new Socket(this.clientServiceIp, this.clientServicePort);
         this.outputStream = client.getOutputStream();
@@ -69,9 +81,9 @@ public class ClientControlThread extends Thread implements IBelongControl {
         InteractiveModel recv = InteractiveUtil.recv(inputStream);
         log.info(recv.toJSONString());
 
-        ResultModel javaObject = recv.getData().toJavaObject(ResultModel.class);
+        NatcrossResultModel javaObject = recv.getData().toJavaObject(NatcrossResultModel.class);
 
-        if (StringUtils.equals(ResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
+        if (StringUtils.equals(NatcrossResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
             this.start();
             return true;
         }
@@ -85,14 +97,22 @@ public class ClientControlThread extends Thread implements IBelongControl {
                 InteractiveModel recvInteractiveModel = InteractiveUtil.recv(this.inputStream);
                 procMethod(recvInteractiveModel);
             } catch (IOException e) {
-                e.printStackTrace();
-                this.cancell();
+                log.warn("client control [{}] to server is exception,will stopClient", listenServerPort);
+                this.stopClient();
             }
         }
     }
 
+    /**
+     * 接收处理方法
+     *
+     * @author Pluto
+     * @since 2019-07-19 09:10:22
+     * @param recvInteractiveModel
+     * @throws IOException
+     */
     public void procMethod(InteractiveModel recvInteractiveModel) throws IOException {
-        log.info(recvInteractiveModel.toJSONString());
+        log.info("接收到新的指令: {}", recvInteractiveModel.toJSONString());
 
         String interactiveType = recvInteractiveModel.getInteractiveType();
         JSONObject jsonObject = recvInteractiveModel.getData();
@@ -110,12 +130,19 @@ public class ClientControlThread extends Thread implements IBelongControl {
         return;
     }
 
+    /**
+     * 建立连接
+     *
+     * @author Pluto
+     * @since 2019-07-19 09:10:42
+     * @param clientWaitModel
+     */
     private void clientConnect(ClientWaitModel clientWaitModel) {
         Socket destSocket = null;
         try {
             destSocket = new Socket(this.destIp, this.destPort);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("向目标建立连接失败 {}:{}", this.destIp, this.destPort);
             return;
         }
 
@@ -133,25 +160,26 @@ public class ClientControlThread extends Thread implements IBelongControl {
             InteractiveModel recv = InteractiveUtil.recv(inputStream2);
             log.info(recv.toJSONString());
 
-            ResultModel javaObject = recv.getData().toJavaObject(ResultModel.class);
+            NatcrossResultModel javaObject = recv.getData().toJavaObject(NatcrossResultModel.class);
 
-            if (!StringUtils.equals(ResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
+            if (!StringUtils.equals(NatcrossResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
                 throw new RuntimeException("绑定失败");
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("打通隧道发生异常 {}:{}<->{}:{} ;[]", this.clientServiceIp, this.clientServicePort, this.destIp,
+                    this.destPort, e.getLocalizedMessage());
             try {
                 destSocket.close();
             } catch (IOException e1) {
-                e1.printStackTrace();
+                log.debug("关闭目标端口异常", e);
             }
 
             if (clientSocket != null) {
                 try {
                     clientSocket.close();
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    log.debug("关闭客户端口异常", e);
                 }
             }
             return;
@@ -165,9 +193,12 @@ public class ClientControlThread extends Thread implements IBelongControl {
         socketPart.createPassWay();
     }
 
+    /**
+     * 停止某对连接
+     */
     @Override
     public boolean stopSocketPart(String socketPartKey) {
-        log.info("stopSocketPart[{}]", socketPartKey);
+        log.debug("stopSocketPart[{}] from [{}]", socketPartKey, client.getInetAddress().toString());
         SocketPart socketPart = socketPartMap.remove(socketPartKey);
         if (socketPart == null) {
             return false;
@@ -176,32 +207,90 @@ public class ClientControlThread extends Thread implements IBelongControl {
         return true;
     }
 
-    @Override
-    public void start() {
-        this.isAlive = true;
-        if (!this.isAlive()) {
-            super.start();
-        }
+    /**
+     * 发送心跳
+     *
+     * @author Pluto
+     * @since 2019-07-19 09:42:30
+     * @throws IOException
+     */
+    public void sendUrgentData() throws IOException {
+        // 无需判空，空指针异常也是异常
+        this.client.sendUrgentData(0xFF);
     }
 
-    public void cancell() {
-        isAlive = false;
+    public void start() {
+        this.isAlive = true;
+        if (myThread == null || !myThread.isAlive()) {
+            myThread = new Thread(this);
+            myThread.start();
+        }
+        clientHeartThread.start();
+    }
 
+    /**
+     * 停止客户端监听
+     *
+     * @author Pluto
+     * @since 2019-07-19 09:24:41
+     */
+    public void stopClient() {
+        isAlive = false;
         if (client != null) {
             try {
                 client.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.warn("cancell [{}] exception :{}", client.getInetAddress().toString(), e.getLocalizedMessage());
             }
+            this.client = null;
+        }
+        if (this.inputStream != null) {
+            try {
+                this.inputStream.close();
+            } catch (IOException e) {
+                log.warn("cancell [{}] inputStream exception :{}", client.getInetAddress().toString(),
+                        e.getLocalizedMessage());
+            }
+            this.inputStream = null;
+        }
+        if (this.outputStream != null) {
+            try {
+                this.outputStream.close();
+            } catch (IOException e) {
+                log.warn("cancell [{}] outputStream exception :{}", client.getInetAddress().toString(),
+                        e.getLocalizedMessage());
+            }
+            this.outputStream = null;
+        }
+    }
+
+    /**
+     * 退出
+     *
+     * @author Pluto
+     * @since 2019-07-19 09:19:43
+     */
+    public void cancell() {
+
+        clientHeartThread.cancel();
+        stopClient();
+
+        for (String key : socketPartMap.keySet()) {
+            stopSocketPart(key);
         }
 
+    }
+
+    public String getClientServiceIp() {
+        return clientServiceIp;
     }
 
     public Integer getClientServicePort() {
         return clientServicePort;
     }
 
-    public void setClientServicePort(Integer clientServicePort) {
+    public void setClientServiceIpPort(String clientServiceIp, Integer clientServicePort) {
+        this.clientServiceIp = clientServiceIp;
         this.clientServicePort = clientServicePort;
     }
 
@@ -217,24 +306,13 @@ public class ClientControlThread extends Thread implements IBelongControl {
         return destIp;
     }
 
-    public void setDestIp(String destIp) {
-        this.destIp = destIp;
-    }
-
     public Integer getDestPort() {
         return destPort;
     }
 
-    public void setDestPort(Integer destPort) {
+    public void setDestIpPort(String destIp, Integer destPort) {
+        this.destIp = destIp;
         this.destPort = destPort;
-    }
-
-    public String getClientServiceIp() {
-        return clientServiceIp;
-    }
-
-    public void setClientServiceIp(String clientServiceIp) {
-        this.clientServiceIp = clientServiceIp;
     }
 
 }

@@ -15,20 +15,22 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * <p>
- * 监听服务
+ * 监听转发服务进程
  * </p>
  *
  * @author wangmin1994@qq.com
  * @since 2019-07-05 10:53:33
  */
 @Slf4j
-public class ServerListenThread extends Thread implements IBelongControl {
+public class ServerListenThread implements Runnable, IBelongControl {
+
+    private Thread myThread = null;
 
     private boolean isAlive = false;
     private Integer listenPort;
     private ServerSocket listenServerSocket;
 
-    private ControlSocketModel controlSocket;
+    private ControlSocket controlSocket;
 
     private Map<String, SocketPart> socketPartMap = new TreeMap<>();
 
@@ -43,6 +45,7 @@ public class ServerListenThread extends Thread implements IBelongControl {
             try {
                 Socket listenSocket = listenServerSocket.accept();
 
+                // 如果没有控制接收socket，则取消接入，不主动关闭所有接口，防止controlSocket临时掉线，讲道理没有controlSocket也不会启动
                 if (controlSocket == null) {
                     listenSocket.close();
                     continue;
@@ -54,22 +57,26 @@ public class ServerListenThread extends Thread implements IBelongControl {
                 socketPart.setSocketPartKey(socketPartKey);
                 socketPart.setListenSocket(listenSocket);
 
+                // 发送指令失败，同controlSocket为空
                 if (!sendClientWait(socketPartKey)) {
                     socketPart.cancell();
                     continue;
                 }
                 socketPartMap.put(socketPartKey, socketPart);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.warn("监听服务[" + this.listenPort + "]发送通知服务异常", e);
             }
         }
     }
 
-    @Override
+    /**
+     * 启动
+     */
     public void start() {
         this.isAlive = true;
-        if (!this.isAlive()) {
-            super.start();
+        if (myThread == null || !myThread.isAlive()) {
+            myThread = new Thread(this);
+            myThread.start();
         }
         log.info("server listen port[{}] is started!", this.listenPort);
     }
@@ -84,7 +91,7 @@ public class ServerListenThread extends Thread implements IBelongControl {
      */
     @Override
     public boolean stopSocketPart(String socketPartKey) {
-        log.info("stopSocketPart[{}]", socketPartKey);
+        log.debug("停止接口 stopSocketPart[{}]", socketPartKey);
         SocketPart socketPart = socketPartMap.remove(socketPartKey);
         if (socketPart == null) {
             return false;
@@ -101,7 +108,7 @@ public class ServerListenThread extends Thread implements IBelongControl {
      * @return
      */
     public boolean doSetPartClient(String socketPartKey, Socket sendSocket) {
-        log.info("doSetPartClient[{}]", socketPartKey);
+        log.debug("接入接口 doSetPartClient[{}]", socketPartKey);
         SocketPart socketPart = socketPartMap.get(socketPartKey);
         if (socketPart == null) {
             return false;
@@ -119,11 +126,11 @@ public class ServerListenThread extends Thread implements IBelongControl {
      * @param socketPartKey
      */
     public boolean sendClientWait(String socketPartKey) {
-        log.info("sendClientWait[{}]", socketPartKey);
+        log.info("告知新连接 sendClientWait[{}]", socketPartKey);
         try {
             this.controlSocket.sendClientWait(socketPartKey);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.warn("告知新连接 sendClientWait[" + socketPartKey + "] 异常", e);
             if (this.controlSocket == null || !this.controlSocket.isValid()) {
                 // 保证control为置空状态
                 stopListen();
@@ -133,6 +140,12 @@ public class ServerListenThread extends Thread implements IBelongControl {
         return true;
     }
 
+    /**
+     * 关停监听服务，不注销已经建立的，并置空controlSocket
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:43:43
+     */
     public void stopListen() {
         log.info("stopListen[{}]", this.listenPort);
         isAlive = false;
@@ -147,15 +160,21 @@ public class ServerListenThread extends Thread implements IBelongControl {
         }
     }
 
+    /**
+     * 退出
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:44:11
+     */
     public void cancell() {
-        log.info("cancell[{}]", this.listenPort);
+        log.debug("cancell[{}]", this.listenPort);
         isAlive = false;
 
         if (listenServerSocket != null) {
             try {
                 listenServerSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.debug("监听服务端口关闭异常", e);
             }
         }
 
@@ -163,7 +182,7 @@ public class ServerListenThread extends Thread implements IBelongControl {
             try {
                 controlSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.debug("监听服务控制端口关闭异常", e);
             }
             this.controlSocket = null;
         }
@@ -179,10 +198,24 @@ public class ServerListenThread extends Thread implements IBelongControl {
         }
     }
 
+    /**
+     * 获取监听端口
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:45:57
+     * @return
+     */
     public Integer getListenPort() {
         return this.listenPort;
     }
 
+    /**
+     * 设置控制端口
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:46:05
+     * @param controlSocket
+     */
     public void setControlSocket(Socket controlSocket) {
         log.info("setControlSocket[{}]", this.listenPort);
         if (this.controlSocket != null) {
@@ -193,7 +226,7 @@ public class ServerListenThread extends Thread implements IBelongControl {
             }
         }
 
-        this.controlSocket = new ControlSocketModel(controlSocket);
+        this.controlSocket = new ControlSocket(controlSocket);
     }
 
 }

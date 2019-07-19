@@ -1,20 +1,32 @@
 package person.pluto.natcross.serveritem;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
+import lombok.extern.slf4j.Slf4j;
+
 /**
  * <p>
- * 
+ * 转发监听服务控制类
  * </p>
  *
  * @author wangmin1994@qq.com
  * @since 2019-07-05 11:25:44
  */
+@Slf4j
 public class ListenServerControl {
 
     private static Map<Integer, ServerListenThread> serverListenMap = new TreeMap<>();
 
+    /**
+     * 加入新的监听服务进程
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:36:25
+     * @param serverListen
+     * @return
+     */
     public static boolean add(ServerListenThread serverListen) {
         if (serverListen == null) {
             return false;
@@ -31,6 +43,14 @@ public class ListenServerControl {
         return true;
     }
 
+    /**
+     * 去除指定端口的监听服务端口
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:36:35
+     * @param listenPort
+     * @return
+     */
     public static boolean remove(Integer listenPort) {
         ServerListenThread serverListenThread = serverListenMap.get(listenPort);
         if (serverListenThread == null) {
@@ -43,8 +63,49 @@ public class ListenServerControl {
         return true;
     }
 
+    /**
+     * 根据端口获取监听服务端口
+     *
+     * @author Pluto
+     * @since 2019-07-18 18:36:52
+     * @param listenPort
+     * @return
+     */
     public static ServerListenThread get(Integer listenPort) {
         return serverListenMap.get(listenPort);
+    }
+
+    /**
+     * 关闭所有监听服务
+     *
+     * @author Pluto
+     * @since 2019-07-18 19:00:54
+     */
+    public static void closeAll() {
+        for (Integer key : serverListenMap.keySet()) {
+            remove(key);
+        }
+    }
+
+    /**
+     * 创建新的监听服务
+     *
+     * @author Pluto
+     * @since 2019-07-19 13:59:24
+     * @param port
+     * @return
+     */
+    public static ServerListenThread createNewListenServer(Integer port) {
+        ServerListenThread serverListenThread = null;
+        try {
+            serverListenThread = new ServerListenThread(port);
+        } catch (IOException e) {
+            log.warn("create listen server [{}] faild", port);
+            return null;
+        }
+        ListenServerControl.add(serverListenThread);
+        serverListenThread.start();
+        return serverListenThread;
     }
 
 }

@@ -69,6 +69,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
                 socketPartMap.put(socketPartKey, socketPart);
             } catch (Exception e) {
                 log.warn("监听服务[" + this.listenPort + "]发送通知服务异常", e);
+                stopListen();
             }
         }
     }
@@ -242,6 +243,10 @@ public class ServerListenThread implements Runnable, IBelongControl {
     public List<String> getSocketPartList() {
         Set<String> keySet = this.socketPartMap.keySet();
         return Arrays.asList(keySet.toArray(new String[keySet.size()]));
+    }
+
+    public Boolean isAlive() {
+        return isAlive;
     }
 
 }

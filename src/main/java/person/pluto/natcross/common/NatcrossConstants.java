@@ -4,6 +4,8 @@ public class NatcrossConstants {
 
     public static Integer STREAM_CACHE_SIZE = 1024;
 
+    public static String CLIENT_SERVER_IP = "127.0.0.1";
+
     public static Integer CLIENT_SERVER_PORT = 10010;
 
     public static Long CLIENT_HEART_INTERVAL = 10L * 1000L;

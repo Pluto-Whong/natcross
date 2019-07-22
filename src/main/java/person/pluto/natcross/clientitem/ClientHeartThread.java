@@ -79,4 +79,8 @@ public class ClientHeartThread implements Runnable {
         }
     }
 
+    public boolean isAlive() {
+        return isAlive;
+    }
+
 }

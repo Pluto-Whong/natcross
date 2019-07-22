@@ -320,4 +320,14 @@ public class ClientControlThread implements Runnable, IBelongControl {
         this.destPort = destPort;
     }
 
+    public boolean isAlive() {
+        if (isAlive) {
+            return true;
+        }
+        if (clientHeartThread == null) {
+            return false;
+        }
+        return clientHeartThread.isAlive();
+    }
+
 }

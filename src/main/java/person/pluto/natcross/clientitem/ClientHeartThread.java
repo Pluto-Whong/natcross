@@ -73,7 +73,10 @@ public class ClientHeartThread implements Runnable {
 
     public void cancel() {
         this.isAlive = false;
-        myThread.interrupt();
+        if (myThread != null) {
+            myThread.interrupt();
+            myThread = null;
+        }
     }
 
 }

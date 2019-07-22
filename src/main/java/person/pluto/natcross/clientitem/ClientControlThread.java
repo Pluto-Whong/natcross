@@ -263,6 +263,10 @@ public class ClientControlThread implements Runnable, IBelongControl {
             }
             this.outputStream = null;
         }
+        if (myThread != null) {
+            myThread.interrupt();
+            myThread = null;
+        }
     }
 
     /**

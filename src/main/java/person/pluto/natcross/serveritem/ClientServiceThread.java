@@ -164,6 +164,11 @@ public class ClientServiceThread implements Runnable {
             }
         }
 
+        if (myThread != null) {
+            myThread.interrupt();
+            myThread = null;
+        }
+
     }
 
     /**

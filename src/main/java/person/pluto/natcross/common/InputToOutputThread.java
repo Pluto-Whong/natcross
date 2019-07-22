@@ -76,6 +76,10 @@ public class InputToOutputThread implements Runnable {
             }
             outputStream = null;
         }
+        if (myThread != null) {
+            myThread.interrupt();
+            myThread = null;
+        }
     }
 
 }

@@ -157,9 +157,14 @@ public class ServerListenThread implements Runnable, IBelongControl {
             try {
                 controlSocket.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                log.debug("监听服务控制端口关闭异常", e);
             }
             this.controlSocket = null;
+        }
+
+        if (myThread != null) {
+            myThread.interrupt();
+            myThread = null;
         }
     }
 
@@ -171,7 +176,8 @@ public class ServerListenThread implements Runnable, IBelongControl {
      */
     public void cancell() {
         log.debug("cancell[{}]", this.listenPort);
-        isAlive = false;
+
+        this.stopListen();
 
         if (listenServerSocket != null) {
             try {
@@ -179,15 +185,6 @@ public class ServerListenThread implements Runnable, IBelongControl {
             } catch (IOException e) {
                 log.debug("监听服务端口关闭异常", e);
             }
-        }
-
-        if (controlSocket != null) {
-            try {
-                controlSocket.close();
-            } catch (IOException e) {
-                log.debug("监听服务控制端口关闭异常", e);
-            }
-            this.controlSocket = null;
         }
 
         if (socketPartMap != null) {
@@ -199,6 +196,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
             }
             socketPartMap.clear();
         }
+
     }
 
     /**
@@ -230,6 +228,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
         }
 
         this.controlSocket = new ControlSocket(controlSocket);
+        this.start();
     }
 
     /**

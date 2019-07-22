@@ -126,7 +126,6 @@ public class ListenServerControl {
         // 若没有报错则说明没有监听该端口的线程，即不可正常使用原有端口，所以先进行强行remove，再进行add
         ListenServerControl.remove(port);
         ListenServerControl.add(serverListenThread);
-        serverListenThread.start();
         return serverListenThread;
     }
 

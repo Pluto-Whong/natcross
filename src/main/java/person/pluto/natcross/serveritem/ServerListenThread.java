@@ -40,6 +40,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
     public ServerListenThread(Integer port) throws IOException {
         this.listenPort = port;
         listenServerSocket = new ServerSocket(port);
+        log.info("server listen port[{}] is created!", this.listenPort);
     }
 
     @Override

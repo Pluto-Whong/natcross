@@ -45,7 +45,7 @@ public class ControlSocket {
      * @return
      */
     public boolean isValid() {
-        if (this.controlSocket == null || !this.controlSocket.isConnected() || !this.controlSocket.isClosed()) {
+        if (this.controlSocket == null || !this.controlSocket.isConnected() || this.controlSocket.isClosed()) {
             return false;
         }
         return true;

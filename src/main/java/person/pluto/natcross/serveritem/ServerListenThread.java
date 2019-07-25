@@ -132,10 +132,17 @@ public class ServerListenThread implements Runnable, IBelongControl {
      */
     public boolean sendClientWait(String socketPartKey) {
         log.info("告知新连接 sendClientWait[{}]", socketPartKey);
+        boolean sendClientWait = false;
+
         try {
-            this.controlSocket.sendClientWait(socketPartKey);
-        } catch (IOException e) {
-            log.warn("告知新连接 sendClientWait[" + socketPartKey + "] 异常", e);
+            sendClientWait = this.controlSocket.sendClientWait(socketPartKey);
+        } catch (Exception e) {
+            log.error("告知新连接 sendClientWait[" + socketPartKey + "] 发生未知异常", e);
+            sendClientWait = false;
+        }
+
+        if (!sendClientWait) {
+            log.warn("告知新连接 sendClientWait[" + socketPartKey + "] 失败");
             if (this.controlSocket == null || !this.controlSocket.isValid()) {
                 // 保证control为置空状态
                 stopListen();
@@ -158,7 +165,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
         if (controlSocket != null) {
             try {
                 controlSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.debug("监听服务控制端口关闭异常", e);
             }
             this.controlSocket = null;
@@ -224,7 +231,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
         if (this.controlSocket != null) {
             try {
                 this.controlSocket.close();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }

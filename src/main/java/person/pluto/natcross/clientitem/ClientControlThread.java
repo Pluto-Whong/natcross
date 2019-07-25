@@ -124,7 +124,18 @@ public class ClientControlThread implements Runnable, IBelongControl {
         }
         if (interactiveTypeEnum.equals(InteractiveTypeEnum.CLIENT_WAIT)) {
             ClientWaitModel clientWaitModel = jsonObject.toJavaObject(ClientWaitModel.class);
-            clientConnect(clientWaitModel);
+            boolean clientConnect = clientConnect(clientWaitModel);
+
+            InteractiveModel sendInteractiveModel = null;
+            if (clientConnect) {
+                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
+                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofSuccess());
+            } else {
+                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
+                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofFail());
+            }
+            InteractiveUtil.send(outputStream, sendInteractiveModel);
+
             return;
         }
 
@@ -138,13 +149,13 @@ public class ClientControlThread implements Runnable, IBelongControl {
      * @since 2019-07-19 09:10:42
      * @param clientWaitModel
      */
-    private void clientConnect(ClientWaitModel clientWaitModel) {
+    private boolean clientConnect(ClientWaitModel clientWaitModel) {
         Socket destSocket = null;
         try {
             destSocket = new Socket(this.destIp, this.destPort);
         } catch (IOException e) {
             log.error("向目标建立连接失败 {}:{}", this.destIp, this.destPort);
-            return;
+            return false;
         }
 
         Socket clientSocket = null;
@@ -183,7 +194,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
                     log.debug("关闭客户端口异常", e);
                 }
             }
-            return;
+            return false;
         }
 
         SocketPart socketPart = new SocketPart(this);
@@ -191,7 +202,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
         socketPart.setListenSocket(destSocket);
         socketPart.setSendSocket(clientSocket);
         socketPartMap.put(clientWaitModel.getSocketPartKey(), socketPart);
-        socketPart.createPassWay();
+        return socketPart.createPassWay();
     }
 
     /**

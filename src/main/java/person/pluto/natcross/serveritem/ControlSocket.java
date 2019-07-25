@@ -1,14 +1,20 @@
 package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.InteractiveUtil;
 import person.pluto.natcross.model.InteractiveModel;
+import person.pluto.natcross.model.NatcrossResultModel;
 import person.pluto.natcross.model.enumeration.InteractiveTypeEnum;
+import person.pluto.natcross.model.enumeration.NatcrossResultEnum;
 import person.pluto.natcross.model.interactive.ClientWaitModel;
 
 /**
@@ -20,10 +26,12 @@ import person.pluto.natcross.model.interactive.ClientWaitModel;
  * @author Pluto
  * @since 2019-07-17 11:03:56
  */
+@Slf4j
 public class ControlSocket {
 
     private Socket controlSocket;
     private OutputStream outputStream;
+    private InputStream inputStream;
 
     /**
      * 锁定输出资源标志
@@ -55,8 +63,32 @@ public class ControlSocket {
      * @since 2019-07-18 18:33:54
      * @throws IOException
      */
-    public void close() throws IOException {
-        controlSocket.close();
+    public void close() {
+        if (outputStream != null) {
+            try {
+                outputStream.close();
+            } catch (Exception e) {
+                // no thing
+            }
+        }
+
+        if (inputStream != null) {
+            try {
+                inputStream.close();
+            } catch (Exception e) {
+                // no thing
+            }
+        }
+
+        if (controlSocket != null) {
+            try {
+                controlSocket.close();
+            } catch (Exception e) {
+                // no thing
+            }
+        }
+
+        socketLock.unlock();
     }
 
     /**
@@ -74,6 +106,13 @@ public class ControlSocket {
         return outputStream;
     }
 
+    private InputStream getInputStream() throws IOException {
+        if (inputStream == null) {
+            inputStream = this.controlSocket.getInputStream();
+        }
+        return inputStream;
+    }
+
     /**
      * 发送新接入接口
      *
@@ -82,25 +121,28 @@ public class ControlSocket {
      * @param socketPartKey
      * @throws IOException
      */
-    public void sendClientWait(String socketPartKey) throws IOException {
+    public boolean sendClientWait(String socketPartKey) {
         InteractiveModel model = InteractiveModel.of(InteractiveTypeEnum.CLIENT_WAIT,
                 new ClientWaitModel(socketPartKey));
-        send(model);
-    }
 
-    /**
-     * 发送指令（单项）
-     *
-     * @author Pluto
-     * @since 2019-07-18 18:34:56
-     * @param model
-     * @throws IOException
-     */
-    public void send(InteractiveModel model) throws IOException {
         socketLock.lock();
-        OutputStream outputStreamTmp = getOutputStream();
-        InteractiveUtil.send(outputStreamTmp, model);
-        socketLock.unlock();
+        try {
+            InteractiveUtil.send(getOutputStream(), model);
+            InteractiveModel recv = InteractiveUtil.recv(getInputStream());
+            log.info("发送等待连接通知后收到 {}", recv.toJSONString());
+
+            NatcrossResultModel javaObject = recv.getData().toJavaObject(NatcrossResultModel.class);
+
+            if (!StringUtils.equals(NatcrossResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
+                throw new RuntimeException("客户端建立连接失败");
+            }
+        } catch (Exception e) {
+            return false;
+        } finally {
+            socketLock.lock();
+        }
+
+        return true;
     }
 
 }

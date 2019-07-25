@@ -139,7 +139,7 @@ public class ControlSocket {
         } catch (Exception e) {
             return false;
         } finally {
-            socketLock.lock();
+            socketLock.unlock();
         }
 
         return true;

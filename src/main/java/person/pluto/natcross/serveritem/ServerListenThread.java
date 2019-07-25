@@ -61,12 +61,13 @@ public class ServerListenThread implements Runnable, IBelongControl {
                 socketPart.setSocketPartKey(socketPartKey);
                 socketPart.setListenSocket(listenSocket);
 
+                socketPartMap.put(socketPartKey, socketPart);
                 // 发送指令失败，同controlSocket为空
                 if (!sendClientWait(socketPartKey)) {
+                    socketPartMap.remove(socketPartKey);
                     socketPart.cancell();
                     continue;
                 }
-                socketPartMap.put(socketPartKey, socketPart);
             } catch (Exception e) {
                 log.warn("监听服务[" + this.listenPort + "]发送通知服务异常", e);
                 stopListen();

@@ -93,6 +93,10 @@ public class ControlSocket {
      * @throws IOException
      */
     private OutputStream getOutputStream() throws IOException {
+        if (!isValid()) {
+            return null;
+        }
+
         if (outputStream == null) {
             outputStream = this.controlSocket.getOutputStream();
         }
@@ -109,6 +113,10 @@ public class ControlSocket {
      */
     @SuppressWarnings("unused")
     private InputStream getInputStream() throws IOException {
+        if (!isValid()) {
+            return null;
+        }
+
         if (inputStream == null) {
             inputStream = this.controlSocket.getInputStream();
         }

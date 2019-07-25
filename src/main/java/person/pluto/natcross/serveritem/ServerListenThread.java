@@ -233,7 +233,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
             try {
                 this.controlSocket.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                log.debug("监听服务控制端口关闭异常", e);
             }
         }
 

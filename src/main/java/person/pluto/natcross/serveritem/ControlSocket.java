@@ -7,14 +7,9 @@ import java.net.Socket;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.apache.commons.lang3.StringUtils;
-
-import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.InteractiveUtil;
 import person.pluto.natcross.model.InteractiveModel;
-import person.pluto.natcross.model.NatcrossResultModel;
 import person.pluto.natcross.model.enumeration.InteractiveTypeEnum;
-import person.pluto.natcross.model.enumeration.NatcrossResultEnum;
 import person.pluto.natcross.model.interactive.ClientWaitModel;
 
 /**
@@ -26,7 +21,7 @@ import person.pluto.natcross.model.interactive.ClientWaitModel;
  * @author Pluto
  * @since 2019-07-17 11:03:56
  */
-@Slf4j
+//@Slf4j
 public class ControlSocket {
 
     private Socket controlSocket;
@@ -106,6 +101,15 @@ public class ControlSocket {
         return outputStream;
     }
 
+    /**
+     * 获取输入流
+     *
+     * @author Pluto
+     * @since 2019-07-25 15:51:03
+     * @return
+     * @throws IOException
+     */
+    @SuppressWarnings("unused")
     private InputStream getInputStream() throws IOException {
         if (inputStream == null) {
             inputStream = this.controlSocket.getInputStream();
@@ -128,14 +132,14 @@ public class ControlSocket {
         socketLock.lock();
         try {
             InteractiveUtil.send(getOutputStream(), model);
-            InteractiveModel recv = InteractiveUtil.recv(getInputStream());
-            log.info("发送等待连接通知后收到 {}", recv.toJSONString());
-
-            NatcrossResultModel javaObject = recv.getData().toJavaObject(NatcrossResultModel.class);
-
-            if (!StringUtils.equals(NatcrossResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
-                throw new RuntimeException("客户端建立连接失败");
-            }
+//            InteractiveModel recv = InteractiveUtil.recv(getInputStream());
+//            log.info("发送等待连接通知后收到 {}", recv.toJSONString());
+//
+//            NatcrossResultModel javaObject = recv.getData().toJavaObject(NatcrossResultModel.class);
+//
+//            if (!StringUtils.equals(NatcrossResultEnum.SUCCESS.getCode(), javaObject.getRetCod())) {
+//                throw new RuntimeException("客户端建立连接失败");
+//            }
         } catch (Exception e) {
             return false;
         } finally {

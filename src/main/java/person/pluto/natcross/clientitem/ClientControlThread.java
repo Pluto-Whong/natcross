@@ -124,17 +124,19 @@ public class ClientControlThread implements Runnable, IBelongControl {
         }
         if (interactiveTypeEnum.equals(InteractiveTypeEnum.CLIENT_WAIT)) {
             ClientWaitModel clientWaitModel = jsonObject.toJavaObject(ClientWaitModel.class);
-            boolean clientConnect = clientConnect(clientWaitModel);
-
-            InteractiveModel sendInteractiveModel = null;
-            if (clientConnect) {
-                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
-                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofSuccess());
-            } else {
-                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
-                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofFail());
-            }
-            InteractiveUtil.send(outputStream, sendInteractiveModel);
+            clientConnect(clientWaitModel);
+            
+//            boolean clientConnect = clientConnect(clientWaitModel);
+//
+//            InteractiveModel sendInteractiveModel = null;
+//            if (clientConnect) {
+//                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
+//                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofSuccess());
+//            } else {
+//                sendInteractiveModel = InteractiveModel.of(recvInteractiveModel.getInteractiveSeq(),
+//                        InteractiveTypeEnum.COMMON_REPLY, NatcrossResultModel.ofFail());
+//            }
+//            InteractiveUtil.send(outputStream, sendInteractiveModel);
 
             return;
         }

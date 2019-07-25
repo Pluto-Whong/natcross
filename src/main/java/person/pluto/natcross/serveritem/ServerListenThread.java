@@ -6,7 +6,6 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import person.pluto.natcross.common.CommonFormat;
@@ -197,14 +196,11 @@ public class ServerListenThread implements Runnable, IBelongControl {
             }
         }
 
-        if (socketPartMap != null) {
-            for (Entry<String, SocketPart> entry : socketPartMap.entrySet()) {
-                SocketPart socketPart = entry.getValue();
-                if (socketPart != null) {
-                    socketPart.cancell();
-                }
-            }
-            socketPartMap.clear();
+        Set<String> keySet = socketPartMap.keySet();
+        String[] array = keySet.toArray(new String[keySet.size()]);
+
+        for (String key : array) {
+            stopSocketPart(key);
         }
 
     }

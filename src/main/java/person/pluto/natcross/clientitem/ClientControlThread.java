@@ -6,6 +6,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
@@ -125,7 +126,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
         if (interactiveTypeEnum.equals(InteractiveTypeEnum.CLIENT_WAIT)) {
             ClientWaitModel clientWaitModel = jsonObject.toJavaObject(ClientWaitModel.class);
             clientConnect(clientWaitModel);
-            
+
 //            boolean clientConnect = clientConnect(clientWaitModel);
 //
 //            InteractiveModel sendInteractiveModel = null;
@@ -293,7 +294,10 @@ public class ClientControlThread implements Runnable, IBelongControl {
         clientHeartThread.cancel();
         stopClient();
 
-        for (String key : socketPartMap.keySet()) {
+        Set<String> keySet = socketPartMap.keySet();
+        String[] array = keySet.toArray(new String[keySet.size()]);
+
+        for (String key : array) {
             stopSocketPart(key);
         }
 

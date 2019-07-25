@@ -48,13 +48,13 @@ public class ControlSocket {
         if (this.controlSocket == null || !this.controlSocket.isConnected() || this.controlSocket.isClosed()) {
             return false;
         }
-        
+
         try {
             this.controlSocket.sendUrgentData(0xff);
         } catch (IOException e) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -145,6 +145,7 @@ public class ControlSocket {
         socketLock.lock();
         try {
             InteractiveUtil.send(getOutputStream(), model);
+            // edit 20190725 by pluto 不回复，这样就可以快速建立连接
 //            InteractiveModel recv = InteractiveUtil.recv(getInputStream());
 //            log.info("发送等待连接通知后收到 {}", recv.toJSONString());
 //

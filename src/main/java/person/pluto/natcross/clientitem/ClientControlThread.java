@@ -127,6 +127,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
             ClientWaitModel clientWaitModel = jsonObject.toJavaObject(ClientWaitModel.class);
             clientConnect(clientWaitModel);
 
+            // edit 20190725 by pluto 不回复，这样就可以快速建立连接
 //            boolean clientConnect = clientConnect(clientWaitModel);
 //
 //            InteractiveModel sendInteractiveModel = null;

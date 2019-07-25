@@ -48,6 +48,13 @@ public class ControlSocket {
         if (this.controlSocket == null || !this.controlSocket.isConnected() || this.controlSocket.isClosed()) {
             return false;
         }
+        
+        try {
+            this.controlSocket.sendUrgentData(0xff);
+        } catch (IOException e) {
+            return false;
+        }
+        
         return true;
     }
 

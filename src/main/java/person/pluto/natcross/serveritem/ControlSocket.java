@@ -82,8 +82,6 @@ public class ControlSocket {
                 // no thing
             }
         }
-
-        socketLock.unlock();
     }
 
     /**

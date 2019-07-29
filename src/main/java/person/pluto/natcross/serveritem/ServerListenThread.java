@@ -97,11 +97,12 @@ public class ServerListenThread implements Runnable, IBelongControl {
     @Override
     public boolean stopSocketPart(String socketPartKey) {
         log.debug("停止接口 stopSocketPart[{}]", socketPartKey);
-        SocketPart socketPart = socketPartMap.remove(socketPartKey);
+        SocketPart socketPart = socketPartMap.get(socketPartKey);
         if (socketPart == null) {
             return false;
         }
         socketPart.cancell();
+        socketPartMap.remove(socketPartKey);
         return true;
     }
 

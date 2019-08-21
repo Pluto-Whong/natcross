@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.time.Duration;
+import java.time.LocalDateTime;
 
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.IBelongControl;
 import person.pluto.natcross.common.InputToOutputThread;
+import person.pluto.natcross.common.NatcrossConstants;
 
 /**
  * 
@@ -22,6 +25,9 @@ import person.pluto.natcross.common.InputToOutputThread;
 @Data
 @Slf4j
 public class SocketPart implements IBelongControl {
+
+    private boolean isAlive = false;
+    private LocalDateTime createTime;
 
     private String socketPartKey;
     private Socket listenSocket;
@@ -37,6 +43,23 @@ public class SocketPart implements IBelongControl {
 
     public SocketPart(IBelongControl belongThread) {
         this.belongThread = belongThread;
+        this.createTime = LocalDateTime.now();
+    }
+
+    /**
+     * 判断是否失效
+     *
+     * @author wangmin1994@qq.com
+     * @since 2019-08-21 12:48:29
+     * @return
+     */
+    public boolean isValid() {
+        if (isAlive) {
+            return isAlive;
+        }
+
+        long millis = Duration.between(createTime, LocalDateTime.now()).toMillis();
+        return millis < NatcrossConstants.SOCKET_PART_INVAILD_MILLIS;
     }
 
     /**
@@ -61,6 +84,7 @@ public class SocketPart implements IBelongControl {
      */
     public void cancell() {
         log.debug("socketPartKey {} will cancell", this.socketPartKey);
+        this.isAlive = false;
         if (listenSocket != null) {
             try {
                 listenSocket.close();
@@ -97,7 +121,7 @@ public class SocketPart implements IBelongControl {
      * @return
      */
     public boolean createPassWay() {
-
+        this.isAlive = true;
         try {
             InputStream listInputStream = listenSocket.getInputStream();
             OutputStream lisOutputStream = listenSocket.getOutputStream();

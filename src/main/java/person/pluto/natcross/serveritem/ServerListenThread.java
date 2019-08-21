@@ -107,6 +107,28 @@ public class ServerListenThread implements Runnable, IBelongControl {
     }
 
     /**
+     * 清理无效socketPart
+     *
+     * @author wangmin1994@qq.com
+     * @since 2019-08-21 12:50:57
+     */
+    public void clearInvaildSocketPart() {
+        log.debug("clearInvaildSocketPart[{}]", this.listenPort);
+
+        Set<String> keySet = socketPartMap.keySet();
+        String[] array = keySet.toArray(new String[keySet.size()]);
+
+        for (String key : array) {
+
+            SocketPart socketPart = socketPartMap.get(key);
+            if (socketPart != null && !socketPart.isValid()) {
+                stopSocketPart(key);
+            }
+        }
+
+    }
+
+    /**
      * 将接受到的连接进行设置组合
      * 
      * @param socketPartKey
@@ -204,6 +226,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
             stopSocketPart(key);
         }
 
+        log.debug("cancell[{}] is success", this.listenPort);
     }
 
     /**

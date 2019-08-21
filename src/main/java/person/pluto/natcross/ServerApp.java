@@ -13,6 +13,7 @@ import java.net.UnknownHostException;
 
 import person.pluto.natcross.clientitem.ClientControlThread;
 import person.pluto.natcross.common.NatcrossConstants;
+import person.pluto.natcross.serveritem.ClearInvalidSocketPartThread;
 import person.pluto.natcross.serveritem.ClientServiceThread;
 import person.pluto.natcross.serveritem.ListenServerControl;
 import person.pluto.natcross.serveritem.ServerListenThread;
@@ -29,6 +30,9 @@ public class ServerApp {
             // 监听端口
             ListenServerControl.createNewListenServer(Integer.valueOf(args[i]));
         }
+
+        ClearInvalidSocketPartThread clearInvalidSocketPartThread = new ClearInvalidSocketPartThread();
+        clearInvalidSocketPartThread.start();
     }
 
 }

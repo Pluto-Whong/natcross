@@ -49,11 +49,11 @@ public class ControlSocket {
             return false;
         }
 
-        try {
-            this.controlSocket.sendUrgentData(0xff);
-        } catch (IOException e) {
-            return false;
-        }
+//        try {
+//            this.controlSocket.sendUrgentData(0xff);
+//        } catch (IOException e) {
+//            return false;
+//        }
 
         return true;
     }

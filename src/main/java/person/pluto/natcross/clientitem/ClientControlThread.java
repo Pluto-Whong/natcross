@@ -125,7 +125,13 @@ public class ClientControlThread implements Runnable, IBelongControl {
         }
         if (interactiveTypeEnum.equals(InteractiveTypeEnum.CLIENT_WAIT)) {
             ClientWaitModel clientWaitModel = jsonObject.toJavaObject(ClientWaitModel.class);
-            clientConnect(clientWaitModel);
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    clientConnect(clientWaitModel);
+                }
+            }).start();
 
             // edit 20190725 by pluto 不回复，这样就可以快速建立连接
 //            boolean clientConnect = clientConnect(clientWaitModel);

@@ -30,5 +30,8 @@ public class NatcrossConstants {
      * socketPart清理时间间隔
      */
     public static Long SOCKET_PART_CLEAR_INTERVAL_SECONDS = 10L;
-
+    /**
+     * 服务端测试
+     */
+    public static Long SERVER_SEND_URGENT_DATA_INTERVAL_MILLIS = 10L;
 }

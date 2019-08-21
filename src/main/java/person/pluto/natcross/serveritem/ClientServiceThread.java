@@ -45,7 +45,13 @@ public class ClientServiceThread implements Runnable {
         while (isAlive) {
             try {
                 Socket listenSocket = listenServerSocket.accept();
-                procMethod(listenSocket);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        procMethod(listenSocket);
+                    }
+                }).start();
             } catch (Exception e) {
                 log.warn("客户端服务进程 轮询等待出现异常", e);
             }

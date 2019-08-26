@@ -143,7 +143,14 @@ public class ServerListenThread implements Runnable, IBelongControl {
         }
         socketPart.setSendSocket(sendSocket);
 
-        return socketPart.createPassWay();
+        boolean createPassWay = socketPart.createPassWay();
+        if (!createPassWay) {
+            socketPart.cancell();
+            stopSocketPart(socketPartKey);
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -271,6 +278,10 @@ public class ServerListenThread implements Runnable, IBelongControl {
     public List<String> getSocketPartList() {
         Set<String> keySet = this.socketPartMap.keySet();
         return Arrays.asList(keySet.toArray(new String[keySet.size()]));
+    }
+
+    public Map<String, SocketPart> getSocketPartMap() {
+        return this.socketPartMap;
     }
 
     public Boolean isAlive() {

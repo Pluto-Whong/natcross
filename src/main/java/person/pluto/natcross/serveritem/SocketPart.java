@@ -8,6 +8,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.IBelongControl;
 import person.pluto.natcross.common.InputToOutputThread;
@@ -30,7 +31,9 @@ public class SocketPart implements IBelongControl {
     private LocalDateTime createTime;
 
     private String socketPartKey;
+    @Getter(lombok.AccessLevel.PRIVATE)
     private Socket listenSocket;
+    @Getter(lombok.AccessLevel.PRIVATE)
     private Socket sendSocket;
 
     private InputToOutputThread serverToClientThread;
@@ -39,6 +42,7 @@ public class SocketPart implements IBelongControl {
     /**
      * 所属监听类
      */
+    @Getter(lombok.AccessLevel.PRIVATE)
     private IBelongControl belongThread;
 
     public SocketPart(IBelongControl belongThread) {
@@ -55,6 +59,10 @@ public class SocketPart implements IBelongControl {
      */
     public boolean isValid() {
         if (isAlive) {
+            if (serverToClientThread == null || !serverToClientThread.isAlive() || clientToServerThread == null
+                    || !clientToServerThread.isAlive()) {
+                return false;
+            }
             return isAlive;
         }
 
@@ -69,11 +77,11 @@ public class SocketPart implements IBelongControl {
      * @since 2019-07-11 17:04:52
      */
     public void stop() {
+        this.cancell();
         if (belongThread != null) {
             belongThread.stopSocketPart(socketPartKey);
         }
         belongThread = null;
-        this.cancell();
     }
 
     /**
@@ -121,6 +129,9 @@ public class SocketPart implements IBelongControl {
      * @return
      */
     public boolean createPassWay() {
+        if (this.isAlive) {
+            return true;
+        }
         this.isAlive = true;
         try {
             InputStream listInputStream = listenSocket.getInputStream();
@@ -136,6 +147,7 @@ public class SocketPart implements IBelongControl {
             clientToServerThread.start();
         } catch (Exception e) {
             log.error("socketPart [" + this.socketPartKey + "] 隧道建立异常", e);
+            this.stop();
             return false;
         }
         return true;
@@ -147,6 +159,22 @@ public class SocketPart implements IBelongControl {
     @Override
     public void noticeStop() {
         this.stop();
+    }
+
+    public String getListenSocketString() {
+        if (listenSocket == null) {
+            return null;
+        }
+
+        return listenSocket.toString();
+    }
+
+    public String getSendSocketString() {
+        if (sendSocket == null) {
+            return null;
+        }
+
+        return sendSocket.toString();
     }
 
 }

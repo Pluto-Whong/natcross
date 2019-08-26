@@ -211,6 +211,12 @@ public class ClientControlThread implements Runnable, IBelongControl {
         socketPart.setSocketPartKey(clientWaitModel.getSocketPartKey());
         socketPart.setListenSocket(destSocket);
         socketPart.setSendSocket(clientSocket);
+        boolean createPassWay = socketPart.createPassWay();
+        if (!createPassWay) {
+            socketPart.cancell();
+            return false;
+        }
+
         socketPartMap.put(clientWaitModel.getSocketPartKey(), socketPart);
         return socketPart.createPassWay();
     }

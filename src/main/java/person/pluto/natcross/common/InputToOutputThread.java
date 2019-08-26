@@ -45,6 +45,7 @@ public class InputToOutputThread implements Runnable {
             log.debug("one InputToOutputThread closed", e);
         }
 
+        this.cancell();
         if (belongControl != null) {
             belongControl.noticeStop();
         }
@@ -80,6 +81,10 @@ public class InputToOutputThread implements Runnable {
             myThread.interrupt();
             myThread = null;
         }
+    }
+
+    public boolean isAlive() {
+        return this.isAlive;
     }
 
 }

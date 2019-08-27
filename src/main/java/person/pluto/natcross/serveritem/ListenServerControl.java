@@ -1,11 +1,11 @@
 package person.pluto.natcross.serveritem;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ListenServerControl {
 
-    private static Map<Integer, ServerListenThread> serverListenMap = new TreeMap<>();
+    private static Map<Integer, ServerListenThread> serverListenMap = new HashMap<>();
 
     /**
      * 加入新的监听服务进程

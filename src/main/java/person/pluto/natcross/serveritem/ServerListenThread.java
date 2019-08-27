@@ -4,14 +4,14 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import person.pluto.natcross.common.CommonFormat;
 import person.pluto.natcross.common.IBelongControl;
-
-import java.util.TreeMap;
+import person.pluto.natcross.common.SocketPart;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,7 +34,7 @@ public class ServerListenThread implements Runnable, IBelongControl {
 
     private ControlSocket controlSocket;
 
-    private Map<String, SocketPart> socketPartMap = new TreeMap<>();
+    private Map<String, SocketPart> socketPartMap = new HashMap<>();
 
     public ServerListenThread(Integer port) throws IOException {
         this.listenPort = port;

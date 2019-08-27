@@ -5,9 +5,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -16,13 +16,13 @@ import com.alibaba.fastjson.JSONObject;
 import lombok.extern.slf4j.Slf4j;
 import person.pluto.natcross.common.IBelongControl;
 import person.pluto.natcross.common.InteractiveUtil;
+import person.pluto.natcross.common.SocketPart;
 import person.pluto.natcross.model.InteractiveModel;
 import person.pluto.natcross.model.NatcrossResultModel;
 import person.pluto.natcross.model.enumeration.InteractiveTypeEnum;
 import person.pluto.natcross.model.enumeration.NatcrossResultEnum;
 import person.pluto.natcross.model.interactive.ClientControlModel;
 import person.pluto.natcross.model.interactive.ClientWaitModel;
-import person.pluto.natcross.serveritem.SocketPart;
 
 /**
  * <p>
@@ -49,7 +49,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
     private OutputStream outputStream;
     private InputStream inputStream;
 
-    private Map<String, SocketPart> socketPartMap = new TreeMap<>();
+    private Map<String, SocketPart> socketPartMap = new HashMap<>();
 
     private ClientHeartThread clientHeartThread;
 

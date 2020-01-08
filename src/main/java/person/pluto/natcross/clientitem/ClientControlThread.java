@@ -190,7 +190,7 @@ public class ClientControlThread implements Runnable, IBelongControl {
 
         } catch (Exception e) {
             log.error("打通隧道发生异常 {}:{}<->{}:{} ;[]", this.clientServiceIp, this.clientServicePort, this.destIp,
-                    this.destPort, e.getLocalizedMessage());
+                    this.destPort, e.getCause());
             try {
                 destSocket.close();
             } catch (IOException e1) {
